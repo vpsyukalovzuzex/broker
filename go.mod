@@ -1,4 +1,4 @@
-module broker
+module github.com/vpsyukalovzuzex/broker
 
 go 1.22.0
 
