@@ -21,7 +21,12 @@ func New() *Broker {
 	}
 }
 
-func (b *Broker) Start(url string) error {
+func (b *Broker) Start(params map[string]any) error {
+	url, ok := params["url"].(string)
+	if !ok {
+		return fmt.Errorf("invalid params: should be url key")
+	}
+
 	var err error
 	b.conn, err = amqp.Dial(url)
 	if err != nil {
@@ -84,7 +89,7 @@ func (b *Broker) Consume(
 	ctx context.Context,
 	channel string,
 	queue string,
-	block func(context.Context, *amqp.Delivery),
+	action func(context.Context, []byte),
 ) error {
 	ch, err := b.addChannelIfNeeded(ctx, channel)
 	if err != nil {
@@ -109,7 +114,7 @@ func (b *Broker) Consume(
 		return fmt.Errorf("consume, channel consume: %v", err)
 	}
 
-	go b.listenQueue(ctx, msgs, block)
+	go b.listenQueue(ctx, msgs, action)
 
 	return nil
 }
@@ -145,14 +150,14 @@ func (b *Broker) declareQueueIfNeeded(ch *amqp.Channel, queue string) (amqp.Queu
 func (b *Broker) listenQueue(
 	ctx context.Context,
 	msgs <-chan amqp.Delivery,
-	block func(context.Context, *amqp.Delivery),
+	block func(context.Context, []byte),
 ) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case msg := <-msgs:
-			block(ctx, &msg)
+			block(ctx, msg.Body)
 		}
 	}
 }
