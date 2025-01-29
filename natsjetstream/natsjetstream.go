@@ -17,8 +17,10 @@ type Broker struct {
 	js nats.JetStreamContext
 }
 
-func New() *Broker {
-	return &Broker{}
+func New(url string) *Broker {
+	return &Broker{
+		Url: url,
+	}
 }
 
 func (b *Broker) Start() error {
