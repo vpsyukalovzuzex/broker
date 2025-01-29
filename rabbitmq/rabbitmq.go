@@ -1,4 +1,4 @@
-package broker
+package rabbitmq
 
 import (
 	"context"
@@ -11,24 +11,23 @@ import (
 )
 
 type Broker struct {
-	conn  *amqp.Connection
+	Url string
+
+	conn *amqp.Connection
+
 	chans map[string]*amqp.Channel
 }
 
-func New() *Broker {
+func New(url string) *Broker {
 	return &Broker{
+		Url:   url,
 		chans: make(map[string]*amqp.Channel),
 	}
 }
 
-func (b *Broker) Start(params map[string]any) error {
-	url, ok := params["url"].(string)
-	if !ok {
-		return fmt.Errorf("invalid params: should be url key")
-	}
-
+func (b *Broker) Start() error {
 	var err error
-	b.conn, err = amqp.Dial(url)
+	b.conn, err = amqp.Dial(b.Url)
 	if err != nil {
 		return fmt.Errorf("start, dial: %v", err)
 	}
