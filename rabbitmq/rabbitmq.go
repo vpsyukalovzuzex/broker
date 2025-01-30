@@ -88,7 +88,7 @@ func (b *Broker) Consume(
 	ctx context.Context,
 	channel string,
 	queue string,
-	action func(context.Context, []byte),
+	fn func(context.Context, []byte),
 ) error {
 	ch, err := b.addChannelIfNeeded(ctx, channel)
 	if err != nil {
@@ -113,7 +113,7 @@ func (b *Broker) Consume(
 		return fmt.Errorf("consume, channel consume: %v", err)
 	}
 
-	go b.listenQueue(ctx, msgs, action)
+	go b.listenQueue(ctx, msgs, fn)
 
 	return nil
 }
@@ -149,14 +149,14 @@ func (b *Broker) declareQueueIfNeeded(ch *amqp.Channel, queue string) (amqp.Queu
 func (b *Broker) listenQueue(
 	ctx context.Context,
 	msgs <-chan amqp.Delivery,
-	block func(context.Context, []byte),
+	fn func(context.Context, []byte),
 ) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case msg := <-msgs:
-			block(ctx, msg.Body)
+			fn(ctx, msg.Body)
 		}
 	}
 }

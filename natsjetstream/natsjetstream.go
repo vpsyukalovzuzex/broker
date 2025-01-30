@@ -72,7 +72,7 @@ func (b *Broker) Consume(
 	ctx context.Context,
 	channel string,
 	queue string,
-	action func(context.Context, []byte),
+	fn func(context.Context, []byte),
 ) error {
 	log.Println("consume:", fmt.Sprintf("%s.%s", channel, queue))
 
@@ -84,7 +84,7 @@ func (b *Broker) Consume(
 		fmt.Sprintf("%s.%s", channel, queue),
 		func(msg *nats.Msg) {
 			msg.Ack()
-			action(ctx, msg.Data)
+			fn(ctx, msg.Data)
 		},
 		nats.DeliverNew(),
 	); err != nil {

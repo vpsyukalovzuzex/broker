@@ -18,6 +18,6 @@ type Brokerer interface {
 		ctx context.Context,
 		channel string,
 		queue string,
-		action func(context.Context, []byte),
+		fn func(context.Context, []byte),
 	) error
 }
